@@ -1,10 +1,13 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
+import BookDashboard from "@/components/book/dashboard";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function Home() {
+export default function Books() {
 	return (
-		<main className="flex min-h-screen flex-col items-center justify-between"></main>
+		<>
+			<BookDashboard />
+		</>
 	);
 }
