@@ -47,9 +47,7 @@ export default function MainNavigation({ children = null }) {
 					</div>
 				</div>
 
-				<main className="bg-white">
-					<div>{children}</div>
-				</main>
+				<main className="bg-white">{children}</main>
 			</div>
 		</>
 	);

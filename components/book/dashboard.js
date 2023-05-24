@@ -13,7 +13,7 @@ export default function BookDashboard({ localData }) {
 	useEffect(() => {
 		async function loadImages() {
 			const titles = await invoke("create_covers", {
-				dir: "E:/Documents/BookShare/DIY",
+				dir: "E:/Books/BookShare/DIY",
 			});
 			setTitleData(titles);
 
