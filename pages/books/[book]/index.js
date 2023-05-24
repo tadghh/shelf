@@ -1,10 +1,9 @@
-import Image from "next/image";
 import { Inter } from "next/font/google";
-import BookDashboard from "@/components/book/dashboard";
-import BookItem from "@/components/book/book-item";
+import { invoke } from "@tauri-apps/api/tauri";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
-import { useRouter } from "next/router";
 
 export default function Book() {
 	const router = useRouter();
@@ -12,7 +11,23 @@ export default function Book() {
 	//href of book will be id as number in the json
 	//invoke method in rust to find the books location and return the path
 	//pass path to BookItem
+	const [bookO, setBookO] = useState(String);
+	useEffect(() => {
+		async function loadBook() {
+			if (book !== undefined) {
+				console.log(book);
+				const titles = await invoke("load_book", {
+					title: book,
+				});
+				setBookO(titles);
 
+				const temp = await Promise.all(console.log(bookO));
+				console.log("loaded");
+			}
+		}
+
+		loadBook();
+	}, [book]);
 	//unhash book
 	//load book?
 	//profit?

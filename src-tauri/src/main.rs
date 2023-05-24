@@ -20,6 +20,23 @@ struct Book {
     book_location: String,
     title: String,
 }
+struct BookCache {
+    books: Option<Vec<Book>>,
+    json_path: Option<String>,
+}
+impl BookCache {
+    fn update_path(&mut self, new_json_path: String) {
+        self.json_path = Some(new_json_path);
+    }
+    fn update_books(&mut self, new_books: Vec<Book>) {
+        self.books = Some(new_books);
+    }
+}
+static mut BOOK_JSON: BookCache = BookCache {
+    books: None,
+    json_path: None,
+};
+
 fn create_book_vec(items: &Vec<String>, write_directory: &String) -> Vec<Book> {
     let books: Vec<Book> = items
         .par_iter()
@@ -49,7 +66,9 @@ fn create_covers(dir: String) -> Vec<Book> {
     let paths = fs::read_dir(&dir);
     let mut book_json: Vec<Book>;
     let json_path = format!("{}/book_cache.json", &dir);
-
+    unsafe {
+        BOOK_JSON.update_path(format!("{}/book_cache.json", &dir));
+    }
     let epubs: Vec<String> = paths
         .unwrap()
         .filter_map(|entry| {
@@ -109,6 +128,46 @@ fn create_covers(dir: String) -> Vec<Book> {
 
     return book_json;
 }
+#[tauri::command]
+fn load_book(title: String) -> Result<String, String> {
+    unsafe {
+        let open_file: &String = &BOOK_JSON.json_path.to_owned().unwrap();
+        let mut book_json: Vec<Book>;
+        println!("Yo here {}", open_file);
+        if Path::new(&open_file).exists() {
+            let file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .open(&open_file);
+            println!("Yo hsssere {}", open_file);
+
+            BOOK_JSON.update_books(
+                match serde_json::from_reader(BufReader::new(file.unwrap())) {
+                    Ok(data) => data,
+                    Err(_) => Vec::new(),
+                },
+            );
+            //  println!("Yo Index {:?}", &BOOK_JSON.books.take());
+            let book_index =
+                chunk_binary_search_index_load(&BOOK_JSON.books.take().unwrap(), &title);
+            println!("Yo Index {:?}", book_index);
+
+            if let Some(books) = &BOOK_JSON.books {
+                if let Some(book) = books.get(book_index.unwrap()) {
+                    // Accessing the book at the specified index
+                    return Ok(book.book_location.to_string());
+                } else {
+                    println!("Invalid index");
+                }
+            }
+        } else {
+            return Err("JSON File missing".to_string());
+        }
+    }
+
+    return Err("Error occured".to_string());
+}
 fn chunk_binary_search_index(dataset: &Vec<Book>, key: &String) -> Option<usize> {
     let title = key.to_string();
     //handel lower case
@@ -135,7 +194,32 @@ fn chunk_binary_search_index(dataset: &Vec<Book>, key: &String) -> Option<usize>
         Some(dataset.len())
     }
 }
+fn chunk_binary_search_index_load(dataset: &Vec<Book>, key: &String) -> Option<usize> {
+    let title = key.to_string();
+    //handel lower case
+    let low = dataset.iter().position(|b| b.title[..1] == title[..1]);
 
+    if let Some(index) = low {
+        let mut high = dataset
+            .iter()
+            .rposition(|b| b.title[..1] == title[..1])
+            .unwrap();
+        let mut unwrapped_low = index;
+        while unwrapped_low <= high {
+            let mid = (unwrapped_low + high) / 2;
+            if dataset[mid].title == title {
+                return Some(mid);
+            } else if dataset[mid].title < title {
+                unwrapped_low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        Some(unwrapped_low)
+    } else {
+        None
+    }
+}
 fn create_cover(book_directory: String, write_directory: &String) -> String {
     use rand::Rng;
 
@@ -190,7 +274,11 @@ fn base64_encode_file(file_path: &str) -> Result<String, String> {
 }
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![create_covers, base64_encode_file])
+        .invoke_handler(tauri::generate_handler![
+            create_covers,
+            base64_encode_file,
+            load_book
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
