@@ -149,14 +149,16 @@ fn load_book(title: String) -> Result<String, String> {
                 },
             );
             //  println!("Yo Index {:?}", &BOOK_JSON.books.take());
-            let book_index =
-                chunk_binary_search_index_load(&BOOK_JSON.books.take().unwrap(), &title);
+            //Okay we have it but like dont steal the data perhaps?
+            let temp = &BOOK_JSON.books.take().unwrap();
+            let book_index = chunk_binary_search_index_load(temp, &title);
             println!("Yo Index {:?}", book_index);
 
-            if let Some(books) = &BOOK_JSON.books {
+            if let books = temp {
                 if let Some(book) = books.get(book_index.unwrap()) {
                     // Accessing the book at the specified index
-                    return Ok(book.book_location.to_string());
+                    println!("{}", book.book_location.to_string());
+                    return Ok(base64_encode_book(&book.book_location.to_string()).unwrap());
                 } else {
                     println!("Invalid index");
                 }
@@ -258,6 +260,35 @@ fn base64_encode_file(file_path: &str) -> Result<String, String> {
                 Ok(file) => file,
                 Err(err) => {
                     panic!("Failed to open error.jpg: {}", err,);
+                }
+            }
+        }
+    };
+
+    match file.read_to_end(&mut buffer) {
+        Ok(_) => (),
+        Err(err) => return Err(format!("Failed to read file: {}", err)),
+    };
+
+    // Encode the file data as base64
+    let base64_data = encode(&buffer);
+    Ok(base64_data)
+}
+fn base64_encode_book(file_path: &str) -> Result<String, String> {
+    let mut buffer = Vec::new();
+
+    let mut file = match File::open(&file_path) {
+        Ok(file) => file,
+        Err(_) => {
+            match File::open(
+                env::current_exe()
+                    .expect("Failed to get current executable path")
+                    .parent()
+                    .expect("Failed to get parent directory"),
+            ) {
+                Ok(file) => file,
+                Err(err) => {
+                    panic!("Failed to error: {}", err,);
                 }
             }
         }
