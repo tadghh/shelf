@@ -2,6 +2,7 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
+use std::ptr::null;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
@@ -21,20 +22,20 @@ struct Book {
     title: String,
 }
 struct BookCache {
-    books: Option<Vec<Book>>,
-    json_path: Option<String>,
+    books: Vec<Book>,
+    json_path: String,
 }
 impl BookCache {
     fn update_path(&mut self, new_json_path: String) {
-        self.json_path = Some(new_json_path);
+        self.json_path = new_json_path;
     }
     fn update_books(&mut self, new_books: Vec<Book>) {
-        self.books = Some(new_books);
+        self.books = new_books;
     }
 }
 static mut BOOK_JSON: BookCache = BookCache {
-    books: None,
-    json_path: None,
+    books: Vec::new(),
+    json_path: String::new(),
 };
 
 fn create_book_vec(items: &Vec<String>, write_directory: &String) -> Vec<Book> {
@@ -131,7 +132,7 @@ fn create_covers(dir: String) -> Vec<Book> {
 #[tauri::command]
 fn load_book(title: String) -> Result<String, String> {
     unsafe {
-        let open_file: &String = &BOOK_JSON.json_path.to_owned().unwrap();
+        let open_file: &String = &BOOK_JSON.json_path.to_owned();
         let mut book_json: Vec<Book>;
         println!("Yo here {}", open_file);
         if Path::new(&open_file).exists() {
@@ -150,7 +151,7 @@ fn load_book(title: String) -> Result<String, String> {
             );
             //  println!("Yo Index {:?}", &BOOK_JSON.books.take());
             //Okay we have it but like dont steal the data perhaps?
-            let temp = &BOOK_JSON.books.take().unwrap();
+            let temp = &BOOK_JSON.books;
             let book_index = chunk_binary_search_index_load(temp, &title);
             println!("Yo Index {:?}", book_index);
 
