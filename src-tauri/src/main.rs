@@ -301,6 +301,7 @@ fn base64_encode_book(file_path: &str) -> Result<String, String> {
 
     // Encode the file data as base64
     let base64_data = encode(&buffer);
+    //println!("yo {:?}", base64_data);
     Ok(base64_data)
 }
 fn main() {

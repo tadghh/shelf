@@ -20,7 +20,7 @@ export default function Book() {
 				setBookData(
 					await invoke("load_book", {
 						title: book,
-					})
+					}).then(console.log("it loaded ofc"))
 				);
 				//setBookO(titles);
 				console.log(bookData.length);
@@ -55,8 +55,8 @@ export default function Book() {
 		}
 
 		loadBook();
-	}, [book, bookRef]);
-
+	}, [book, bookRef, bookData]);
+	console.log(bookData.length);
 	return (
 		<div className="flex ml-20 min-h-screen flex-col items-center	 justify-items-center	">
 			<h1 className="text-black">{book}</h1>
