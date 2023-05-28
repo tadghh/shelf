@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use std::{env, fs};
@@ -135,6 +136,8 @@ fn create_covers(dir: String) -> Vec<Book> {
             Ok(data) => data,
             Err(_) => Vec::new(),
         };
+        let book_json_len = Arc::new(AtomicUsize::new(book_json.len()));
+
         let book_json_test = Arc::new(Mutex::new(book_json));
 
         epubs.par_iter().for_each(|item| {
@@ -156,6 +159,7 @@ fn create_covers(dir: String) -> Vec<Book> {
                     title: title.clone(),
                 };
                 book_json_guard.insert(index.unwrap(), new_book);
+                book_json_len.fetch_sub(1, Ordering::SeqCst);
             }
         });
 
@@ -163,6 +167,10 @@ fn create_covers(dir: String) -> Vec<Book> {
             .unwrap()
             .into_inner()
             .unwrap();
+        let final_length = book_json_len.load(Ordering::SeqCst);
+        //if the lenghts are dff bool it
+        println!("Length before: {}", book_json.len());
+        println!("Length after: {}", final_length);
     } else {
         book_json = create_book_vec(&epubs, &covers_directory);
     }
