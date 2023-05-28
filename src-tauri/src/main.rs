@@ -2,17 +2,16 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
-use std::ptr::null;
-use std::sync::{Arc, Mutex};
-use std::time::Instant;
-
 use base64::{decode, encode};
 use epub::doc::EpubDoc;
 use rayon::prelude::*;
+use serde::__private::de::IdentifierDeserializer;
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
 use std::{env, fs};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -21,10 +20,12 @@ struct Book {
     book_location: String,
     title: String,
 }
+
 struct BookCache {
     books: Vec<Book>,
     json_path: String,
 }
+
 impl BookCache {
     fn update_path(&mut self, new_json_path: String) {
         self.json_path = new_json_path;
@@ -33,25 +34,17 @@ impl BookCache {
         self.books = new_books;
     }
 }
+
 static mut BOOK_JSON: BookCache = BookCache {
     books: Vec::new(),
     json_path: String::new(),
 };
 
+static CACHE_FILE_NAME: &'static str = "book_cache.json";
+static COVER_IMAGE_FOLDER_NAME: &'static str = "cover_cache";
+
+//This creates the vector to be written to the json file
 fn create_book_vec(items: &Vec<String>, write_directory: &String) -> Vec<Book> {
-    println!(
-        "{}/{}",
-        env::current_dir()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .to_string_lossy()
-            .replace("\\", "/"),
-        "sample_books"
-    );
-
-    //folder_dir.join(path)
-
     let books: Vec<Book> = items
         .par_iter()
         .filter_map(|item| {
@@ -72,10 +65,24 @@ fn create_book_vec(items: &Vec<String>, write_directory: &String) -> Vec<Book> {
 
     sorted_books
 }
+
+//Checks if a directory exists and if not its path is created
+fn create_directory(path: &String, new_folder_name: &String) -> String {
+    let created_dir = Path::new(&path).join(new_folder_name);
+    if !Path::new(&created_dir).exists() {
+        if let Err(err) = std::fs::create_dir_all(&created_dir) {
+            eprintln!("Failed to create folder: {}", err);
+        }
+    }
+    return created_dir.to_string_lossy().replace("\\", "/");
+}
+
 #[tauri::command]
 fn create_covers(dir: String) -> Vec<Book> {
     //file name to long
     let start_time = Instant::now();
+
+    let mut file_changes = false;
 
     //Get rust directory
     let home_dir = &env::current_dir()
@@ -85,46 +92,11 @@ fn create_covers(dir: String) -> Vec<Book> {
         .to_string_lossy()
         .replace("\\", "/");
 
-    //move out and check for public folder
-    let public_directory = Path::new(&home_dir).join("public");
-    if !public_directory.exists() {
-        if let Err(err) = std::fs::create_dir_all(&public_directory) {
-            eprintln!("Failed to create 'public' folder: {}", err);
-        }
-    }
-    //check for cover_cache folder
-
-    let covers_directory = Path::new(&public_directory.to_string_lossy().replace("\\", "/"))
-        .join("cover_cache")
-        .to_string_lossy()
-        .replace("\\", "/");
-    println!("aaaaaaaaa{:?}", &covers_directory);
-
-    //
-    //Integrity function
-    //Run during initial creation to make sure the folder structure is good
-    //On a reload of the app if we run into and error
+    let json_path = format!("{}/{}", &home_dir, &CACHE_FILE_NAME);
 
     let paths = fs::read_dir(&dir);
-    let mut book_json: Vec<Book>;
-    let json_path = format!(
-        "{}/book_cache.json",
-        &env::current_dir()
-            .unwrap()
-            .to_string_lossy()
-            .replace("\\", "/")
-    );
-    unsafe {
-        BOOK_JSON.update_path(format!(
-            "{}/book_cache.json",
-            &env::current_dir()
-                .unwrap()
-                .parent()
-                .unwrap()
-                .to_string_lossy()
-                .replace("\\", "/")
-        ));
-    }
+
+    //Load epubs from the provided directory in the frontend, currently the dashboards component
     let epubs: Vec<String> = paths
         .unwrap()
         .filter_map(|entry| {
@@ -136,6 +108,21 @@ fn create_covers(dir: String) -> Vec<Book> {
             }
         })
         .collect();
+
+    let mut book_json: Vec<Book>;
+
+    //We need this folder to load cover images, otherwise images need to base64 encoded and thats to hacky
+    let public_directory = create_directory(home_dir, &"public".to_owned());
+    let covers_directory = create_directory(
+        &public_directory.to_string(),
+        &COVER_IMAGE_FOLDER_NAME.to_owned(),
+    );
+
+    unsafe {
+        if BOOK_JSON.json_path != json_path {
+            BOOK_JSON.update_path(format!("{}/{}", json_path, CACHE_FILE_NAME));
+        }
+    }
 
     if Path::new(&json_path).exists() {
         let file = OpenOptions::new()
@@ -161,6 +148,7 @@ fn create_covers(dir: String) -> Vec<Book> {
 
             if !index.is_none() {
                 //This needs the new folder directory
+                //  file_changes = true;
                 let new_book = Book {
                     cover_location: create_cover(item_normalized.to_string(), &covers_directory),
                     book_location: item_normalized,
@@ -190,14 +178,12 @@ fn load_book(title: String) -> Result<String, String> {
     unsafe {
         let open_file: &String = &BOOK_JSON.json_path.to_owned();
         let mut book_json: Vec<Book>;
-        println!("Yo here {}", open_file);
         if Path::new(&open_file).exists() {
             let file = OpenOptions::new()
                 .read(true)
                 .write(true)
                 .create(true)
                 .open(&open_file);
-            println!("Yo hsssere {}", open_file);
 
             BOOK_JSON.update_books(
                 match serde_json::from_reader(BufReader::new(file.unwrap())) {
@@ -209,7 +195,6 @@ fn load_book(title: String) -> Result<String, String> {
             //Okay we have it but like dont steal the data perhaps?
             let temp = &BOOK_JSON.books;
             let book_index = chunk_binary_search_index_load(temp, &title);
-            println!("Yo Index {:?}", book_index);
 
             if let books = temp {
                 if let Some(book) = books.get(book_index.unwrap()) {
@@ -285,9 +270,7 @@ fn create_cover(book_directory: String, write_directory: &String) -> String {
     let mut rng = rand::thread_rng();
 
     let random_num = rng.gen_range(0..=10000).to_string();
-    println!("writy{:?}", &write_directory);
     let cover_path = format!("{}/{}.jpg", &write_directory, random_num);
-    println!("{:?}", &cover_path);
     let doc = EpubDoc::new(&book_directory);
     let mut doc = doc.unwrap();
     if let Some(cover) = doc.get_cover() {
@@ -299,7 +282,7 @@ fn create_cover(book_directory: String, write_directory: &String) -> String {
         }
     }
 
-    return cover_path;
+    return format!("{}.jpg", random_num);
 }
 
 #[tauri::command(rename_all = "snake_case")]
