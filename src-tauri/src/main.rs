@@ -130,6 +130,7 @@ fn create_covers(dir: String) -> Vec<Book> {
             .write(true)
             .create(true)
             .open(&json_path);
+        println!("{:?}", json_path);
         book_json = match serde_json::from_reader(BufReader::new(file.unwrap())) {
             Ok(data) => data,
             Err(_) => Vec::new(),
