@@ -39,6 +39,19 @@ static mut BOOK_JSON: BookCache = BookCache {
 };
 
 fn create_book_vec(items: &Vec<String>, write_directory: &String) -> Vec<Book> {
+    println!(
+        "{}/{}",
+        env::current_dir()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_string_lossy()
+            .replace("\\", "/"),
+        "sample_books"
+    );
+
+    //folder_dir.join(path)
+
     let books: Vec<Book> = items
         .par_iter()
         .filter_map(|item| {
@@ -64,11 +77,53 @@ fn create_covers(dir: String) -> Vec<Book> {
     //file name to long
     let start_time = Instant::now();
 
+    //Get rust directory
+    let home_dir = &env::current_dir()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_string_lossy()
+        .replace("\\", "/");
+
+    //move out and check for public folder
+    let public_directory = Path::new(&home_dir).join("public");
+    if !public_directory.exists() {
+        if let Err(err) = std::fs::create_dir_all(&public_directory) {
+            eprintln!("Failed to create 'public' folder: {}", err);
+        }
+    }
+    //check for cover_cache folder
+
+    let covers_directory = Path::new(&public_directory.to_string_lossy().replace("\\", "/"))
+        .join("cover_cache")
+        .to_string_lossy()
+        .replace("\\", "/");
+    println!("aaaaaaaaa{:?}", &covers_directory);
+
+    //
+    //Integrity function
+    //Run during initial creation to make sure the folder structure is good
+    //On a reload of the app if we run into and error
+
     let paths = fs::read_dir(&dir);
     let mut book_json: Vec<Book>;
-    let json_path = format!("{}/book_cache.json", &dir);
+    let json_path = format!(
+        "{}/book_cache.json",
+        &env::current_dir()
+            .unwrap()
+            .to_string_lossy()
+            .replace("\\", "/")
+    );
     unsafe {
-        BOOK_JSON.update_path(format!("{}/book_cache.json", &dir));
+        BOOK_JSON.update_path(format!(
+            "{}/book_cache.json",
+            &env::current_dir()
+                .unwrap()
+                .parent()
+                .unwrap()
+                .to_string_lossy()
+                .replace("\\", "/")
+        ));
     }
     let epubs: Vec<String> = paths
         .unwrap()
@@ -105,8 +160,9 @@ fn create_covers(dir: String) -> Vec<Book> {
             let index = chunk_binary_search_index(&book_json_guard, &title);
 
             if !index.is_none() {
+                //This needs the new folder directory
                 let new_book = Book {
-                    cover_location: create_cover(item_normalized.to_string(), &dir),
+                    cover_location: create_cover(item_normalized.to_string(), &covers_directory),
                     book_location: item_normalized,
                     title: title.clone(),
                 };
@@ -119,7 +175,7 @@ fn create_covers(dir: String) -> Vec<Book> {
             .into_inner()
             .unwrap();
     } else {
-        book_json = create_book_vec(&epubs, &dir);
+        book_json = create_book_vec(&epubs, &covers_directory);
     }
 
     let file = File::create(json_path).unwrap();
@@ -229,7 +285,9 @@ fn create_cover(book_directory: String, write_directory: &String) -> String {
     let mut rng = rand::thread_rng();
 
     let random_num = rng.gen_range(0..=10000).to_string();
-    let cover_path = format!("{}/covers/{}.jpg", &write_directory, random_num);
+    println!("writy{:?}", &write_directory);
+    let cover_path = format!("{}/{}.jpg", &write_directory, random_num);
+    println!("{:?}", &cover_path);
     let doc = EpubDoc::new(&book_directory);
     let mut doc = doc.unwrap();
     if let Some(cover) = doc.get_cover() {
