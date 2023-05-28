@@ -17,14 +17,7 @@ export default function BookDashboard({ localData }) {
 			});
 			setTitleData(titles);
 
-			const temp = await Promise.all(
-				titles.map(async (book) => {
-					return await invoke("base64_encode_file", {
-						file_path: book.cover_location,
-					});
-				})
-			);
-			setImageData(temp);
+			setImageData(titles);
 			setLoaded(true);
 		}
 
@@ -38,7 +31,7 @@ export default function BookDashboard({ localData }) {
 					<BookCover
 						className="py-4 "
 						key={index}
-						cover_path={`data:image/jpeg;base64,${data}`}
+						cover_path={`./cover_cache/${data.cover_location}`}
 						title={titleData[index]?.title}
 					/>
 				))}
