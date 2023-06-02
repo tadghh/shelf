@@ -179,6 +179,7 @@ fn create_covers(dir: String) -> Vec<Book> {
         file_changes = true;
     }
     if file_changes {
+        println!("True");
         let file = File::create(json_path).unwrap();
         serde_json::to_writer_pretty(file, &book_json);
     }

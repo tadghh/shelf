@@ -5,34 +5,30 @@ import BookCover from "./book-cover";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function BookDashboard({ localData }) {
-	const [imageData, setImageData] = useState([]);
-	const [titleData, setTitleData] = useState([]);
-	const [loaded, setLoaded] = useState(false);
+export default function BookDashboard() {
+	const [coverData, setCoverData] = useState([]);
 
 	useEffect(() => {
-		async function loadImages() {
-			const titles = await invoke("create_covers", {
+		function loadCovers() {
+			invoke("create_covers", {
 				dir: "E:/Books/BookShare/DIYTEST",
+			}).then((data) => {
+				setCoverData(data);
 			});
-			setTitleData(titles);
-
-			setImageData(titles);
-			setLoaded(true);
 		}
 
-		loadImages();
+		loadCovers();
 	}, []);
-
+	console.log(coverData);
 	return (
 		<div className="flex ml-20 min-h-screen gap-y-2.5 py-2  bg-white items-center justify-between flex-wrap">
-			{loaded &&
-				imageData.map((data, index) => (
+			{coverData &&
+				coverData.map((data, index) => (
 					<BookCover
 						className="py-4 "
 						key={index}
 						cover_path={`./cover_cache/${data.cover_location}`}
-						title={titleData[index]?.title}
+						title={data.title}
 					/>
 				))}
 		</div>
