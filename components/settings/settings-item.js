@@ -1,27 +1,27 @@
 export default function SettingsItem({
-	settingsItemInfo,
+	settingsTitle,
 	settingsMethod,
 	children,
+	settingsDescription = "",
 }) {
 	return (
-		<div className="bg-white py-32">
-			<div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 grid-cols-12 gap-8 px-8">
-				<div className="max-w-xl text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl col-span-7">
-					<h2 className="inline ">{settingsItemInfo}</h2>
-				</div>
-				<form className="w-full max-w-md col-span-5 pt-2">
-					<div className="flex gap-x-4">
-						{children}
-						<button
-							type="button"
-							onClick={settingsMethod}
-							className="flex-none rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-						>
-							Apply
-						</button>
-					</div>
-				</form>
+		<div className=" w-full border rounded-xl h-14 bg-gray-200 flex items-center justify-between">
+			<div className=" flex  text-gray-900  ">
+				<h2 className="text-2xl leading-4 font-bold pr-2 ">{settingsTitle}</h2>
+				<p> {settingsDescription}</p>
 			</div>
+			<form className=" ">
+				<div className="flex gap-x-4 px-2">
+					{children}
+					<button
+						type="button"
+						onClick={settingsMethod}
+						className=" rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+					>
+						Apply
+					</button>
+				</div>
+			</form>
 		</div>
 	);
 }

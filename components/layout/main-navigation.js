@@ -1,26 +1,12 @@
-import { Fragment, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import {
-	Bars3Icon,
-	CalendarIcon,
-	ChartPieIcon,
-	DocumentDuplicateIcon,
-	FolderIcon,
-	HomeIcon,
-	StarIcon,
-	UsersIcon,
-	XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { Cog8ToothIcon, HomeIcon, StarIcon } from "@heroicons/react/24/outline";
 
 const navigation = [
-	{ name: "Books", href: "/books", icon: HomeIcon, current: true },
-	{ name: "Settings", href: "/settings", icon: UsersIcon, current: false },
-	{ name: "Favourites", href: "#", icon: StarIcon, current: false },
+	{ name: "Books", href: "/books", icon: HomeIcon },
+	{ name: "Settings", href: "/settings", icon: Cog8ToothIcon },
+	{ name: "Favourites", href: "#", icon: StarIcon },
 ];
 
 export default function MainNavigation({ children = null }) {
-	const [sidebarOpen, setSidebarOpen] = useState(false);
-
 	return (
 		<>
 			<div>
