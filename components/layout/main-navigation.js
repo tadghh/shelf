@@ -14,7 +14,7 @@ import {
 
 const navigation = [
 	{ name: "Books", href: "/books", icon: HomeIcon, current: true },
-	{ name: "Settings", href: "#", icon: UsersIcon, current: false },
+	{ name: "Settings", href: "/settings", icon: UsersIcon, current: false },
 	{ name: "Favourites", href: "#", icon: StarIcon, current: false },
 ];
 

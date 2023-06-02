@@ -169,14 +169,20 @@ fn create_covers(dir: String) -> Vec<Book> {
             .unwrap();
         let final_length = book_json_len.load(Ordering::SeqCst);
         //if the lenghts are dff bool it
+        if book_json.len() != final_length {
+            file_changes = true;
+        }
         println!("Length before: {}", book_json.len());
         println!("Length after: {}", final_length);
     } else {
         book_json = create_book_vec(&epubs, &covers_directory);
+        file_changes = true;
+    }
+    if file_changes {
+        let file = File::create(json_path).unwrap();
+        serde_json::to_writer_pretty(file, &book_json);
     }
 
-    let file = File::create(json_path).unwrap();
-    serde_json::to_writer_pretty(file, &book_json);
     let elapsed_time = start_time.elapsed();
     println!("Execution time: {} ms", elapsed_time.as_millis());
 
