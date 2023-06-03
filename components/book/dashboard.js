@@ -10,9 +10,9 @@ export default function BookDashboard() {
 
 	useEffect(() => {
 		function loadCovers() {
-			invoke("create_covers", {
-				dir: "E:/Books/BookShare/DIYTEST",
-			}).then((data) => {
+			invoke("create_covers").then((data) => {
+				console.log(data);
+				console.log("cover method");
 				setCoverData(data);
 			});
 		}
@@ -20,9 +20,10 @@ export default function BookDashboard() {
 		loadCovers();
 	}, []);
 	console.log(coverData);
+	console.log("is null");
 	return (
 		<div className="flex ml-20 min-h-screen gap-y-2.5 py-2  bg-white items-center justify-between flex-wrap">
-			{coverData &&
+			{(coverData &&
 				coverData.map((data, index) => (
 					<BookCover
 						className="py-4 "
@@ -30,7 +31,11 @@ export default function BookDashboard() {
 						cover_path={`./cover_cache/${data.cover_location}`}
 						title={data.title}
 					/>
-				))}
+				))) || (
+				<div className="rounded-md bg-gray-200 text-blue-500">
+					No book directory setup
+				</div>
+			)}
 		</div>
 	);
 }

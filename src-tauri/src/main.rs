@@ -80,7 +80,7 @@ fn create_directory(path: &String, new_folder_name: &String) -> String {
 }
 
 #[tauri::command]
-fn create_covers(dir: String) -> Vec<Book> {
+fn create_covers() -> Option<Vec<Book>> {
     //file name to long
     let start_time = Instant::now();
 
@@ -95,7 +95,13 @@ fn create_covers(dir: String) -> Vec<Book> {
         .replace("\\", "/");
 
     let json_path = format!("{}/{}", &home_dir, &CACHE_FILE_NAME);
-
+    let dir = match get_configuration_option("book_folder_location".to_string()) {
+        Some(val) => val,
+        None => "".to_string(),
+    };
+    if dir == "".to_string() {
+        return None;
+    }
     let paths = fs::read_dir(&dir);
 
     //Load epubs from the provided directory in the frontend, currently the dashboards component
@@ -188,7 +194,7 @@ fn create_covers(dir: String) -> Vec<Book> {
     let elapsed_time = start_time.elapsed();
     println!("Execution time: {} ms", elapsed_time.as_millis());
 
-    return book_json;
+    return Some(book_json);
 }
 #[tauri::command]
 fn load_book(title: String) -> Result<String, String> {
@@ -326,6 +332,7 @@ fn change_configuration_option(option_name: String, value: String) {
 
     for line in reader.lines() {
         let line_content = line.unwrap();
+        // println!("{:?} bull", &line_content);
         if line_content.starts_with(&option_name) {
             let updated_line = format!("{}={}", option_name, value);
             lines.push(updated_line);
@@ -347,6 +354,37 @@ fn change_configuration_option(option_name: String, value: String) {
     file.set_len(0).unwrap();
     file.write_all(new_contents.as_bytes()).unwrap();
     file.set_len(new_length).unwrap();
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn get_configuration_option(option_name: String) -> Option<String> {
+    let home_dir = &env::current_dir()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_string_lossy()
+        .replace("\\", "/");
+    let settings_path = format!("{}/{}", &home_dir, &SETTINGS_FILE_NAME);
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .read(true)
+        .write(true)
+        .open(&settings_path)
+        .unwrap();
+
+    let reader = BufReader::new(&file);
+
+    for line in reader.lines() {
+        let line_content = line.unwrap();
+        // println!("{:?} bull", &line_content);
+        if line_content.starts_with(&option_name) {
+            let split: Vec<&str> = line_content.split("=").collect();
+            return Some(split[1].to_string());
+        }
+    }
+
+    return None;
 }
 #[tauri::command(rename_all = "snake_case")]
 fn base64_encode_file(file_path: &str) -> Result<String, String> {
@@ -415,7 +453,8 @@ fn main() {
             create_covers,
             base64_encode_file,
             load_book,
-            change_configuration_option
+            change_configuration_option,
+            get_configuration_option
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
