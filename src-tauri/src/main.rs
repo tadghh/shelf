@@ -8,7 +8,7 @@ use rayon::prelude::*;
 use serde::__private::de::IdentifierDeserializer;
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
-use std::io::{BufReader, Read, Write};
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -42,6 +42,7 @@ static mut BOOK_JSON: BookCache = BookCache {
 };
 
 static CACHE_FILE_NAME: &'static str = "book_cache.json";
+static SETTINGS_FILE_NAME: &'static str = "shelf_settings.conf";
 static COVER_IMAGE_FOLDER_NAME: &'static str = "cover_cache";
 
 //This creates the vector to be written to the json file
@@ -302,6 +303,52 @@ fn create_cover(book_directory: String, write_directory: &String) -> String {
 }
 
 #[tauri::command(rename_all = "snake_case")]
+fn change_configuration_option(option_name: String, value: String) {
+    let home_dir = &env::current_dir()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_string_lossy()
+        .replace("\\", "/");
+    let settings_path = format!("{}/{}", &home_dir, &SETTINGS_FILE_NAME);
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .read(true)
+        .write(true)
+        .open(&settings_path)
+        .unwrap();
+
+    let mut lines = Vec::new();
+    let mut updated = false;
+
+    let reader = BufReader::new(&file);
+
+    for line in reader.lines() {
+        let line_content = line.unwrap();
+        if line_content.starts_with(&option_name) {
+            let updated_line = format!("{}={}", option_name, value);
+            lines.push(updated_line);
+            updated = true;
+        } else {
+            lines.push(line_content);
+        }
+    }
+
+    if !updated {
+        let new_line = format!("{}={}", option_name, value);
+        lines.push(new_line);
+    }
+
+    let new_contents = lines.join("\n");
+    let new_length = new_contents.len() as u64;
+
+    file.seek(SeekFrom::Start(0)).unwrap();
+    file.set_len(0).unwrap();
+    file.write_all(new_contents.as_bytes()).unwrap();
+    file.set_len(new_length).unwrap();
+}
+#[tauri::command(rename_all = "snake_case")]
 fn base64_encode_file(file_path: &str) -> Result<String, String> {
     let mut buffer = Vec::new();
 
@@ -367,7 +414,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             create_covers,
             base64_encode_file,
-            load_book
+            load_book,
+            change_configuration_option
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
