@@ -2,10 +2,10 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
-use base64::{decode, encode};
+use base64::encode;
 use epub::doc::EpubDoc;
 use rayon::prelude::*;
-use serde::__private::de::IdentifierDeserializer;
+
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
