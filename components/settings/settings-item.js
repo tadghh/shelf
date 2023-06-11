@@ -1,9 +1,9 @@
-export default function SettingsItem({
+export default function SettingsItem( {
 	settingsTitle,
 	settingsMethod,
 	children,
 	settingsDescription = "",
-}) {
+} ) {
 	return (
 		<div className=" w-full border rounded-xl h-14 bg-gray-200 flex items-center justify-between">
 			<div className=" flex  text-gray-900  ">

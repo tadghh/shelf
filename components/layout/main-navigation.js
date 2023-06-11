@@ -6,7 +6,7 @@ const navigation = [
 	{ name: "Favourites", href: "#", icon: StarIcon },
 ];
 
-export default function MainNavigation({ children = null }) {
+export default function MainNavigation( { children = null } ) {
 	return (
 		<>
 			<div>
@@ -14,7 +14,7 @@ export default function MainNavigation({ children = null }) {
 					<div className="flex  rounded-r-lg text-transparent transition-colors  hover:duration-700 duration-300 ease-in-out hover:text-white grow flex-col gap-y-5 bg-gray-900 px-5">
 						<nav className="pt-8 flex flex-1 flex-col ">
 							<ul role="list">
-								{navigation.map((item) => (
+								{navigation.map( ( item ) => (
 									<li key={item.name} className="flex ">
 										<item.icon
 											className=" w-6 text-white shrink-0"
@@ -27,7 +27,7 @@ export default function MainNavigation({ children = null }) {
 											{item.name}
 										</a>
 									</li>
-								))}
+								) )}
 							</ul>
 						</nav>
 					</div>
