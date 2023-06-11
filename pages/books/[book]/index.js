@@ -1,57 +1,57 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { useRouter } from "next/router";
-import { useState, useEffect, useRef } from "react";
+import {invoke} from "@tauri-apps/api/tauri";
+import {useRouter} from "next/router";
+import {useState, useEffect, useRef} from "react";
 import ePub from "epubjs";
 
 export default function Book() {
 	const router = useRouter();
-	const { book } = router.query;
-	const bookRef = useRef( null );
-	const [bookData, setBookData] = useState( "" );
-	const [bookError, setBookError] = useState( false );
-	const [bookOpen, setBookOpen] = useState( false );
+	const {book} = router.query;
+	const bookRef = useRef(null);
+	const [bookData, setBookData] = useState("");
+	const [bookError, setBookError] = useState(false);
+	const [bookOpen, setBookOpen] = useState(false);
 	const [bookRender, setBookRender] = useState();
 
-	useEffect( () => {
+	useEffect(() => {
 		async function loadBook() {
-			if ( book !== undefined && !bookOpen ) {
+			if (book !== undefined && !bookOpen) {
 				setBookData(
-					await invoke( "load_book", {
+					await invoke("load_book", {
 						title: book,
-					} )
+					})
 				);
 
-				const bookLoaded = ePub( {
+				const bookLoaded = ePub({
 					encoding: "base64",
-				} );
+				});
 
-				if ( bookData.length != 0 && !bookLoaded.isOpen ) {
+				if (bookData.length != 0 && !bookLoaded.isOpen) {
 					bookRef.current = bookLoaded;
 
-					bookLoaded.open( bookData );
+					bookLoaded.open(bookData);
 
 					try {
-						bookLoaded.ready.then( () => {
+						bookLoaded.ready.then(() => {
 							const rendition = bookLoaded.renderTo(
-								document.getElementById( "viewer" ),
+								document.getElementById("viewer"),
 								{
 									width: "100%",
 									height: "100%",
 								}
 							);
-							setBookRender( rendition );
+							setBookRender(rendition);
 							rendition.display();
-						} );
+						});
 					} catch {
-						setBookError( true );
+						setBookError(true);
 					}
-					setBookOpen( true );
+					setBookOpen(true);
 				}
 			}
 		}
 
 		loadBook();
-	}, [book, bookRef, bookData, bookOpen] );
+	}, [book, bookRef, bookData, bookOpen]);
 	return (
 		<div className="flex ml-20 min-h-screen flex-col items-center	 justify-items-center	">
 			<h1 className="text-black">{book}</h1>
@@ -61,7 +61,7 @@ export default function Book() {
 				</div>
 			) : (
 				<div className="flex flex-col border-2 border-orange-700	rounded-lg w-[25rem]	h-[35rem]	">
-					<div id="viewer" style={{ width: "100%", height: "100%" }} />
+					<div id="viewer" style={{width: "100%", height: "100%"}} />
 					<div id="controls" className="flex justify-between">
 						<button
 							onClick={() => bookRender.prev()}
