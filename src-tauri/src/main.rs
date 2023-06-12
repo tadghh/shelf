@@ -156,8 +156,6 @@ fn create_covers() -> Option<Vec<Book>> {
             let index = chunk_binary_search_index(&book_json_guard, &title);
 
             if !index.is_none() {
-                //This needs the new folder directory
-                //  file_changes = true;
                 let new_book = Book {
                     cover_location: create_cover(item_normalized.to_string(), &covers_directory),
                     book_location: item_normalized,
@@ -173,20 +171,19 @@ fn create_covers() -> Option<Vec<Book>> {
             .into_inner()
             .unwrap();
         let final_length = book_json_len.load(Ordering::SeqCst);
-        //if the lenghts are dff bool it
+
+        //if the lengths are dff bool it
         if book_json.len() != final_length {
             file_changes = true;
         }
-        println!("Length before: {}", book_json.len());
-        println!("Length after: {}", final_length);
     } else {
         book_json = create_book_vec(&epubs, &covers_directory);
         file_changes = true;
     }
     if file_changes {
-        println!("True");
-        let file = File::create(json_path).unwrap();
-        serde_json::to_writer_pretty(file, &book_json);
+        let file = File::create(json_path).expect("Json path should be defined and a valid path");
+
+        serde_json::to_writer_pretty(file, &book_json).expect("The book json file should exist")
     }
 
     let elapsed_time = start_time.elapsed();
@@ -198,7 +195,7 @@ fn create_covers() -> Option<Vec<Book>> {
 fn load_book(title: String) -> Result<String, String> {
     unsafe {
         let open_file: &String = &BOOK_JSON.json_path.to_owned();
-        let mut book_json: Vec<Book>;
+
         if Path::new(&open_file).exists() {
             let file = OpenOptions::new()
                 .read(true)
@@ -358,12 +355,10 @@ fn get_configuration_option(option_name: String) -> Option<String> {
         .replace("\\", "/");
     let settings_path = format!("{}/{}", &home_dir, &SETTINGS_FILE_NAME);
 
-    let mut file = OpenOptions::new()
-        .create(true)
+    let file = OpenOptions::new()
         .read(true)
-        .write(true)
         .open(&settings_path)
-        .unwrap();
+        .expect("The settings file should exist");
 
     let reader = BufReader::new(&file);
 
@@ -400,10 +395,8 @@ fn base64_encode_file(file_path: &str) -> Result<String, String> {
         }
     };
 
-    match file.read_to_end(&mut buffer) {
-        Ok(_) => (),
-        Err(err) => return Err(format!("Failed to read file: {}", err)),
-    };
+    file.read_to_end(&mut buffer)
+        .expect("There was an issue with the buffer");
 
     // Encode the file data as base64
     let base64_data = general_purpose::STANDARD_NO_PAD.encode(&buffer);
