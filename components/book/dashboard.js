@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import BookCover from "./book-cover";
@@ -32,6 +33,7 @@ export default function BookDashboard() {
 							title={data.title}
 						/>
 					))}
+
 				</div>
 			)) || (
 					<div className="ml-20 flex min-h-screen justify-center   bg-white">
