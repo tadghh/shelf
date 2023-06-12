@@ -301,7 +301,7 @@ fn create_cover(book_directory: String, write_directory: &String) -> String {
         }
     }
 
-    return format!("{}.jpg", random_num);
+    return cover_path;
 }
 
 #[tauri::command(rename_all = "snake_case")]

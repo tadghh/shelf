@@ -5,32 +5,41 @@ import BookCover from "./book-cover";
 import Link from "next/link";
 
 export default function BookDashboard() {
-	const [coverData, setCoverData] = useState([]);
+	const [imageData, setImageData] = useState([]);
+	const [titleData, setTitleData] = useState([]);
+	const [loaded, setLoaded] = useState(false);
 
 	useEffect(() => {
-		function loadCovers() {
-			invoke("create_covers").then(data => {
-				console.log(data);
-				console.log("cover method");
-				setCoverData(data);
-			});
+		async function loadImages() {
+			const bookCovers = await invoke("create_covers");
+			setTitleData(bookCovers);
+
+			const base64ImageAddresses = await Promise.all(
+				bookCovers.map(async (book) => {
+					return await invoke("base64_encode_file", {
+						file_path: book.cover_location,
+					});
+				})
+			);
+			setImageData(base64ImageAddresses);
+			setLoaded(true);
 		}
 
-		loadCovers();
+		loadImages();
 	}, []);
-	console.log(coverData);
-	console.log("is null");
+
+
 	//Finish making button to goto settings
 	return (
 		<>
-			{(coverData && (
+			{(loaded && (
 				<div className="ml-20 flex min-h-screen flex-wrap items-center  justify-between gap-y-2.5 bg-white py-2">
-					{coverData.map((data, index) => (
+					{imageData.map((data, index) => (
 						<BookCover
 							className="py-4 "
 							key={index}
-							coverPath={`./cover_cache/${data.cover_location}`}
-							title={data.title}
+							coverPath={`data:image/jpeg;base64,${data}`}
+							title={titleData[index]?.title}
 						/>
 					))}
 
