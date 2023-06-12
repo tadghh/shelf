@@ -89,8 +89,6 @@ fn create_covers() -> Option<Vec<Book>> {
     //Get rust directory
     let home_dir = &env::current_dir()
         .unwrap()
-        .parent()
-        .unwrap()
         .to_string_lossy()
         .replace("\\", "/");
 
@@ -120,7 +118,7 @@ fn create_covers() -> Option<Vec<Book>> {
     let mut book_json: Vec<Book>;
 
     //We need this folder to load cover images, otherwise images need to base64 encoded and thats to hacky
-    let public_directory = create_directory(home_dir, &"public".to_owned());
+    let public_directory = create_directory(home_dir, &"cache".to_owned());
     let covers_directory = create_directory(
         &public_directory.to_string(),
         &COVER_IMAGE_FOLDER_NAME.to_owned(),
@@ -219,14 +217,12 @@ fn load_book(title: String) -> Result<String, String> {
             let temp = &BOOK_JSON.books;
             let book_index = chunk_binary_search_index_load(temp, &title);
 
-            if let books = temp {
-                if let Some(book) = books.get(book_index.unwrap()) {
-                    // Accessing the book at the specified index
-                    println!("{}", book.book_location.to_string());
-                    return Ok(base64_encode_book(&book.book_location.to_string()).unwrap());
-                } else {
-                    println!("Invalid index");
-                }
+            if let Some(book) = temp.get(book_index.unwrap()) {
+                // Accessing the book at the specified index
+                println!("{}", book.book_location.to_string());
+                return Ok(base64_encode_book(&book.book_location.to_string()).unwrap());
+            } else {
+                println!("Invalid index");
             }
         } else {
             return Err("JSON File missing".to_string());
@@ -312,8 +308,6 @@ fn create_cover(book_directory: String, write_directory: &String) -> String {
 fn change_configuration_option(option_name: String, value: String) {
     let home_dir = &env::current_dir()
         .unwrap()
-        .parent()
-        .unwrap()
         .to_string_lossy()
         .replace("\\", "/");
     let settings_path = format!("{}/{}", &home_dir, &SETTINGS_FILE_NAME);
@@ -359,8 +353,6 @@ fn change_configuration_option(option_name: String, value: String) {
 #[tauri::command(rename_all = "snake_case")]
 fn get_configuration_option(option_name: String) -> Option<String> {
     let home_dir = &env::current_dir()
-        .unwrap()
-        .parent()
         .unwrap()
         .to_string_lossy()
         .replace("\\", "/");

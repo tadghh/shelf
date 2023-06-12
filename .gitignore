@@ -37,3 +37,4 @@ next-env.d.ts
 book_cache.json
 /public/cover_cache
 shelf_settings.conf
+/src-tauri/cache/
