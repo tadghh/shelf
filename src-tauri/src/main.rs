@@ -2,7 +2,7 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
-use base64::encode;
+use base64::{engine::general_purpose, Engine as _};
 use epub::doc::EpubDoc;
 use rayon::prelude::*;
 
@@ -406,7 +406,7 @@ fn base64_encode_file(file_path: &str) -> Result<String, String> {
     };
 
     // Encode the file data as base64
-    let base64_data = encode(&buffer);
+    let base64_data = general_purpose::STANDARD_NO_PAD.encode(&buffer);
     Ok(base64_data)
 }
 fn base64_encode_book(file_path: &str) -> Result<String, String> {
@@ -435,7 +435,7 @@ fn base64_encode_book(file_path: &str) -> Result<String, String> {
     };
 
     // Encode the file data as base64
-    let base64_data = encode(&buffer);
+    let base64_data = general_purpose::STANDARD_NO_PAD.encode(&buffer);
     //println!("yo {:?}", base64_data);
     Ok(base64_data)
 }

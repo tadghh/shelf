@@ -11,6 +11,8 @@ export default function BookDashboard() {
 
 	useEffect(() => {
 		async function loadImages() {
+			const start = performance.now();
+
 			const bookCovers = await invoke("create_covers");
 			setTitleData(bookCovers);
 
@@ -22,6 +24,11 @@ export default function BookDashboard() {
 				})
 			);
 			setImageData(base64ImageAddresses);
+			const end = performance.now();
+			const executionTime = end - start;
+
+			console.log(`Execution time: ${executionTime} milliseconds`);
+
 			setLoaded(true);
 		}
 
