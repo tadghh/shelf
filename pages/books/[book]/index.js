@@ -39,7 +39,8 @@ export default function Book() {
 							console.log(scrollStyle);
 							console.log("Bonjour");
 							const type = (scrollStyle ? "default" : "continuous");
-
+							//Fix this make it a setting to enable or disable
+							//styling stuff too :)
 							const rendition = bookLoaded.renderTo(
 								document.getElementById("viewer"),
 								{
