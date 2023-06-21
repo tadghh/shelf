@@ -15,21 +15,15 @@ export default function Book() {
 
 	useEffect(() => {
 		async function loadBook() {
-			console.log("bookData");
-			console.log(book);
-			console.log(bookOpen);
+
 			if (book !== undefined && !bookOpen) {
-				console.log("oh");
-				const temp = await invoke("load_book", {
-					title: book,
-				});
-				console.log("damn");
+
 				setBookData(
 					await invoke("load_book", {
 						title: book,
 					})
 				);
-				console.log(bookData);
+
 
 				const bookLoaded = ePub({
 					encoding: "base64",
@@ -45,14 +39,18 @@ export default function Book() {
 							console.log(scrollStyle);
 							console.log("Bonjour");
 							const type = (scrollStyle ? "default" : "continuous");
+
 							const rendition = bookLoaded.renderTo(
 								document.getElementById("viewer"),
 								{
-
+									manager: "continuous",
+									flow: "scrolled",
 									width: "100%",
 									height: "100%",
 								}
 							);
+
+
 							setBookRender(rendition);
 							rendition.display();
 						});
@@ -75,7 +73,7 @@ export default function Book() {
 				</div>
 			) : (
 				<div className="flex flex-col border-2 border-orange-700	rounded-lg w-[25rem]	h-[35rem]	">
-					<div id="viewer" style={{ width: "100%", height: "100%" }} />
+					<div id="viewer" className="flex flex-col" style={{ width: "100%", height: "100%" }} />
 					<div id="controls" className="flex justify-between">
 						<button
 							onClick={() => bookRender.prev()}
