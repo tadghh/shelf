@@ -14,7 +14,6 @@ export default function SettingsItem({
 	const updateOption = () => {
 		console.log("yo we changed" + settingsConfigString);
 		invoke("change_configuration_option", {
-
 			option_name: settingsConfigString,
 			value: settingsItemStatus,
 		}).then(data => {
@@ -34,14 +33,21 @@ export default function SettingsItem({
 		});
 	}, []);
 	return (
-		<div className="w-full border rounded-xl h-14 bg-gray-200 flex items-center justify-between">
-			<div className="flex text-gray-900  ">
-				<h2 className="text-2xl leading-4 font-bold pr-2 ">{settingsTitle}</h2>
+		<div className="flex items-center justify-between w-full bg-gray-200 border h-14 rounded-xl">
+			<div className="flex text-gray-900 ">
+				<h2 className="pr-2 text-2xl font-bold leading-4 ">
+					{settingsTitle}
+				</h2>
 				<p> {settingsDescription}</p>
 			</div>
 			<form>
-				<div className="flex gap-x-4 px-2">
-					{Component && <Component setter={setSettingsItemStatus} status={settingsItemStatus} />}
+				<div className="flex px-2 gap-x-4">
+					{Component && (
+						<Component
+							setter={setSettingsItemStatus}
+							status={settingsItemStatus}
+						/>
+					)}
 					<button
 						type="button"
 						onClick={updateOption}

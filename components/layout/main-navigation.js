@@ -6,28 +6,28 @@ const navigation = [
 	{ name: "Favourites", href: "#", icon: StarIcon },
 ];
 
-export default function MainNavigation( { children = null } ) {
+export default function MainNavigation({ children = null }) {
 	return (
 		<>
 			<div>
-				<div className="transition-width duration-500  ease-in-out   fixed inset-y-0 z-50 flex w-16  hover:w-60 flex-col">
-					<div className="flex  rounded-r-lg text-transparent transition-colors  hover:duration-700 duration-300 ease-in-out hover:text-white grow flex-col gap-y-5 bg-gray-900 px-5">
-						<nav className="pt-8 flex flex-1 flex-col ">
+				<div className="fixed inset-y-0 z-50 flex flex-col w-16 duration-500 ease-in-out transition-width hover:w-60">
+					<div className="flex flex-col px-5 text-transparent transition-colors duration-300 ease-in-out bg-gray-900 rounded-r-lg hover:duration-700 hover:text-white grow gap-y-5">
+						<nav className="flex flex-col flex-1 pt-8 ">
 							<ul role="list">
-								{navigation.map( ( item ) => (
+								{navigation.map((item) => (
 									<li key={item.name} className="flex ">
 										<item.icon
-											className=" w-6 text-white shrink-0"
+											className="w-6 text-white shrink-0"
 											aria-hidden="true"
 										/>
 										<a
 											href={item.href}
-											className="text-inherit hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+											className="flex p-2 text-sm font-semibold leading-6 rounded-md text-inherit hover:bg-gray-800 group gap-x-3"
 										>
 											{item.name}
 										</a>
 									</li>
-								) )}
+								))}
 							</ul>
 						</nav>
 					</div>

@@ -4,7 +4,7 @@ import SettingsItem from "@/components/settings/settings-item";
 export default function Settings() {
 
 	return (
-		<div className="ml-20 flex min-h-screen bg-white  px-5  py-2">
+		<div className="flex min-h-screen px-5 py-2 ml-20 bg-white">
 			<SettingsItem
 				settingsTitle="Book directory"
 				settingsDescription="The folder containing your books"
