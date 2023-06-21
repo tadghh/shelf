@@ -1,5 +1,5 @@
 import { open } from "@tauri-apps/api/dialog";
-
+import ToggleButton from "../Inputs/toggle-button";
 const FileSettingComponent = ({ setter, status = "" }) => {
     return <span
         className="flex-none rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-blue-500 shadow-sm"
@@ -17,9 +17,8 @@ const FileSettingComponent = ({ setter, status = "" }) => {
         {status}
     </span>;
 };
-
-const ToggleSettingComponent = () => {
-    return <div>Option B</div>;
+const ToggleSettingComponent = ({ setter, status }) => {
+    return <ToggleButton onClick={() => setter(!status)} />;
 };
 
 export { FileSettingComponent, ToggleSettingComponent };
