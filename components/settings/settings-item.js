@@ -1,15 +1,15 @@
 /* eslint-disable camelcase */
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/dialog";
-
+import { getComponentForEnum } from "@/lib/SettingsItemReturn";
 export default function SettingsItem({
 	settingsTitle,
 	settingsConfigString,
-
+	settingsType,
 	settingsDescription = "",
 }) {
 	const [settingsItemStatus, setSettingsItemStatus] = useState("");
+	const Component = getComponentForEnum(settingsType);
 
 	const updateOption = () => {
 		console.log("yo we changed" + settingsConfigString);
@@ -34,27 +34,14 @@ export default function SettingsItem({
 		});
 	}, []);
 	return (
-		<div className=" w-full border rounded-xl h-14 bg-gray-200 flex items-center justify-between">
-			<div className=" flex  text-gray-900  ">
+		<div className="w-full border rounded-xl h-14 bg-gray-200 flex items-center justify-between">
+			<div className="flex text-gray-900  ">
 				<h2 className="text-2xl leading-4 font-bold pr-2 ">{settingsTitle}</h2>
 				<p> {settingsDescription}</p>
 			</div>
-			<form className=" ">
+			<form>
 				<div className="flex gap-x-4 px-2">
-					<span
-						type="text"
-						onClick={() => {
-							open({
-								directory: true,
-								multiple: false,
-							}).then(data => {
-								setSettingsItemStatus(data);
-							});
-						}}
-						className="flex-none rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-blue-500  shadow-sm "
-					>
-						{settingsItemStatus}
-					</span>
+					{Component && <Component setter={setSettingsItemStatus} status={settingsItemStatus} />}
 					<button
 						type="button"
 						onClick={updateOption}

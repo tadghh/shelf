@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import SettingsItem from "@/components/settings/settings-item";
-import { open } from "@tauri-apps/api/dialog";
 
 export default function Settings() {
 
@@ -10,6 +9,7 @@ export default function Settings() {
 				settingsTitle="Book directory"
 				settingsDescription="The folder containing your books"
 				settingsConfigString="book_folder_location"
+				settingsType="FILE"
 			/>
 
 
