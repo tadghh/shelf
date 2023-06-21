@@ -17,8 +17,9 @@ const FileSettingComponent = ({ setter, status = "" }) => {
         {status}
     </span>;
 };
-const ToggleSettingComponent = ({ setter, status }) => {
-    return <ToggleButton onClick={() => setter(!status)} />;
+const ToggleSettingComponent = ({ setter, status = true }) => {
+    //This is bad and should be rewritten to use checked
+    return <div onClick={() => setter(!status)}><ToggleButton /></div>;
 };
 
 export { FileSettingComponent, ToggleSettingComponent };

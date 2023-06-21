@@ -11,13 +11,17 @@ export default function SettingsItem({
 	const [settingsItemStatus, setSettingsItemStatus] = useState("");
 	const Component = getComponentForEnum(settingsType);
 
-	const updateOption = () => {
+	const updateOption = ({ value }) => {
 		console.log("yo we changed" + settingsConfigString);
+		console.log("With" + value);
 		invoke("change_configuration_option", {
 			option_name: settingsConfigString,
-			value: settingsItemStatus,
+			value: value + "",
 		}).then(data => {
 			console.log(data);
+			console.log(value);
+			console.log("huh");
+			setSettingsItemStatus(value);
 		});
 	};
 
@@ -25,11 +29,11 @@ export default function SettingsItem({
 		invoke("get_configuration_option", {
 			option_name: settingsConfigString,
 		}).then(data => {
-			if (data == null) {
-				setSettingsItemStatus("Not set");
-			} else {
+			if (data) {
 				setSettingsItemStatus(data);
 			}
+
+
 		});
 	}, []);
 	return (
@@ -41,29 +45,13 @@ export default function SettingsItem({
 				<p> {settingsDescription}</p>
 			</div>
 			<form>
-				{settingsType == "BOOL" ? <div className="flex items-center px-2 gap-x-4">
-					{Component && (
-						<Component
-							setter={setSettingsItemStatus}
-							status={settingsItemStatus}
-						/>
-					)}
+				{Component && (
+					<Component
+						setter={(value) => updateOption({ value })}
+						status={settingsItemStatus}
 
-
-				</div> : <div>
-					{Component && (
-						<Component
-							setter={setSettingsItemStatus}
-							status={settingsItemStatus}
-						/>
-					)}<button
-						type="button"
-						onClick={updateOption}
-						className=" rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-					>
-						Apply
-					</button></div>}
-
+					/>
+				)}
 			</form>
 		</div>
 	);
