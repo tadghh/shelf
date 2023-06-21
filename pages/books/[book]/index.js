@@ -11,15 +11,25 @@ export default function Book() {
 	const [bookError, setBookError] = useState(false);
 	const [bookOpen, setBookOpen] = useState(false);
 	const [bookRender, setBookRender] = useState();
+	const [scrollStyle, setScrollStyle] = useState();
 
 	useEffect(() => {
 		async function loadBook() {
+			console.log("bookData");
+			console.log(book);
+			console.log(bookOpen);
 			if (book !== undefined && !bookOpen) {
+				console.log("oh");
+				const temp = await invoke("load_book", {
+					title: book,
+				});
+				console.log("damn");
 				setBookData(
 					await invoke("load_book", {
 						title: book,
 					})
 				);
+				console.log(bookData);
 
 				const bookLoaded = ePub({
 					encoding: "base64",
@@ -32,9 +42,13 @@ export default function Book() {
 
 					try {
 						bookLoaded.ready.then(() => {
+							console.log(scrollStyle);
+							console.log("Bonjour");
+							const type = (scrollStyle ? "default" : "continuous");
 							const rendition = bookLoaded.renderTo(
 								document.getElementById("viewer"),
 								{
+
 									width: "100%",
 									height: "100%",
 								}
@@ -51,7 +65,7 @@ export default function Book() {
 		}
 
 		loadBook();
-	}, [book, bookRef, bookData, bookOpen]);
+	}, [book, bookRef, bookData, bookOpen, scrollStyle]);
 	return (
 		<div className="flex flex-col items-center min-h-screen ml-20 justify-items-center ">
 			<h1 className="text-black">{book}</h1>

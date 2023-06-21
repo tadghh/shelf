@@ -126,7 +126,7 @@ fn create_covers() -> Option<Vec<Book>> {
 
     unsafe {
         if BOOK_JSON.json_path != json_path {
-            BOOK_JSON.update_path(format!("{}/{}", json_path, CACHE_FILE_NAME));
+            BOOK_JSON.update_path(format!("{}", json_path));
         }
     }
 
@@ -193,9 +193,11 @@ fn create_covers() -> Option<Vec<Book>> {
 }
 #[tauri::command]
 fn load_book(title: String) -> Result<String, String> {
+    println!("{}", title);
     unsafe {
         let open_file: &String = &BOOK_JSON.json_path.to_owned();
-
+        println!("{:?}", Path::new(&open_file).exists());
+        println!("{:?}", &BOOK_JSON.json_path);
         if Path::new(&open_file).exists() {
             let file = OpenOptions::new()
                 .read(true)
@@ -213,7 +215,7 @@ fn load_book(title: String) -> Result<String, String> {
             //Okay we have it but like dont steal the data perhaps?
             let temp = &BOOK_JSON.books;
             let book_index = chunk_binary_search_index_load(temp, &title);
-
+            println!("yo");
             if let Some(book) = temp.get(book_index.unwrap()) {
                 // Accessing the book at the specified index
                 println!("{}", book.book_location.to_string());
