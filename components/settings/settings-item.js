@@ -17,12 +17,7 @@ export default function SettingsItem({
 		invoke("change_configuration_option", {
 			option_name: settingsConfigString,
 			value: value + "",
-		}).then(data => {
-			console.log(data);
-			console.log(value);
-			console.log("huh");
-			setSettingsItemStatus(value);
-		});
+		}).then(setSettingsItemStatus(value));
 	};
 
 	useEffect(() => {
@@ -32,10 +27,9 @@ export default function SettingsItem({
 			if (data) {
 				setSettingsItemStatus(data);
 			}
-
-
 		});
 	}, []);
+
 	return (
 		<div className="flex items-center justify-between w-full p-4 mt-2 bg-gray-200 border h-28 rounded-xl">
 			<div className="flex text-gray-900 ">
