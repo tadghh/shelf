@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import SettingsItem from "@/components/settings/settings-item";
-
+import { SettingsEnum } from "@/lib/SettingsItemEnum";
 export default function Settings() {
 
 	return (
@@ -10,13 +10,13 @@ export default function Settings() {
 				settingsTitle="Book directory"
 				settingsDescription="The folder containing your books"
 				settingsConfigString="book_folder_location"
-				settingsType="FILE"
+				settingsType={SettingsEnum.FILE}
 			/>
 			<SettingsItem
 				settingsTitle="Endless Scrolling"
 				settingsDescription="The next page will load as you scroll"
 				settingsConfigString="endless_scroll"
-				settingsType="BOOL"
+				settingsType={SettingsEnum.TOGGLE}
 			/>
 
 
