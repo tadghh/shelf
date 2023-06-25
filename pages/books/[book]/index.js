@@ -5,7 +5,6 @@ import ePub from "epubjs";
 
 export default function Book() {
 
-
 	const router = useRouter();
 	const { book } = router.query;
 	const bookRef = useRef(null);
@@ -59,7 +58,6 @@ export default function Book() {
 	}, [book, bookRef, bookData, bookOpen, scrollStyle]);
 
 	useEffect(() => {
-
 		if (typeof window !== "undefined") {
 			import("@tauri-apps/api/window").then((module) => {
 				const { appWindow } = module;
@@ -87,19 +85,13 @@ export default function Book() {
 
 	return (
 		<div className="flex flex-col items-center max-h-screen ml-20 overflow-hidden justify-items-center ">
-
-			<h1 className="mt-5 text-black">{book}</h1>
 			{bookError ? (
 				<div>
 					<h3>Book failed to load</h3>
 				</div>
 			) : (
-
-
-
-				<div id="viewer" className=" overflow-hidden border-2 border-orange-700 mb-20 rounded-lg w-10/12 h-[1800px]" style={{ maxHeight: `${maxHeight}px`, maxWidth: `${maxWidth}px` }} />
-
-
+				/*Making the element bigger than visable so more content is loaded and the scroll bar doesnt bottom out as easily*/
+				<div id="viewer" className=" overflow-hidden border-2 border-orange-700 my-10 rounded-lg w-10/12 h-[1800px]" style={{ maxHeight: `${maxHeight}px`, maxWidth: `${maxWidth}px` }} />
 			)}
 
 		</div>
