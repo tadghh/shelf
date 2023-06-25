@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { invoke } from "@tauri-apps/api/tauri";
 import { useRouter } from "next/router";
 import { useState, useEffect, useRef } from "react";
@@ -12,7 +13,7 @@ export default function Book() {
 	const [bookError, setBookError] = useState(false);
 	const [bookOpen, setBookOpen] = useState(false);
 	const [bookRender, setBookRender] = useState();
-	const [scrollStyle, setScrollStyle] = useState();
+	const [scrollStyle, setScrollStyle] = useState("false");
 	const [maxHeight, setMaxHeight] = useState();
 	const [maxWidth, setMaxWidth] = useState();
 
@@ -26,17 +27,29 @@ export default function Book() {
 				});
 
 				if (bookData.length !== 0 && !bookLoaded.isOpen) {
+					let endlessScrollValue;
 					bookRef.current = bookLoaded;
 					bookLoaded.open(bookData);
 
+					invoke("get_configuration_option", {
+						option_name: "endless_scroll",
+					}).then(data => {
+						if (data) {
+							endlessScrollValue = data;
+
+							setScrollStyle(endlessScrollValue === "true");
+						}
+					});
+
 					try {
 						bookLoaded.ready.then(() => {
-							const type = scrollStyle ? "default" : "continuous";
+							//I dont like this null here but nmp atm
+
 							const rendition = bookLoaded.renderTo(
 								document.getElementById("viewer"),
 								{
-									manager: "continuous",
-									flow: "scrolled",
+									manager: endlessScrollValue === "true" ? "continuous" : "default",
+									flow: endlessScrollValue === "true" ? "scrolled" : null,
 									width: "100%",
 									height: "100%",
 								}
@@ -55,15 +68,17 @@ export default function Book() {
 		}
 
 		loadBook();
-	}, [book, bookRef, bookData, bookOpen, scrollStyle]);
+	}, [book, bookRef, bookData, bookOpen]);
 
 	useEffect(() => {
+
 		if (typeof window !== "undefined") {
 			import("@tauri-apps/api/window").then((module) => {
 				const { appWindow } = module;
 				appWindow.setTitle(book);
 			});
 		}
+
 		router.events.on('routeChangeStart', () => {
 			if (typeof window !== "undefined") {
 				import("@tauri-apps/api/window").then((module) => {
@@ -72,6 +87,7 @@ export default function Book() {
 				});
 			}
 		});
+
 		function handleResize() {
 			setMaxHeight(window.innerHeight);
 			setMaxWidth(window.innerWidth);
@@ -81,7 +97,7 @@ export default function Book() {
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
-	}, [book]);
+	}, [book, router.events]);
 
 	return (
 		<div className="flex flex-col items-center max-h-screen ml-20 overflow-hidden justify-items-center ">
@@ -91,7 +107,28 @@ export default function Book() {
 				</div>
 			) : (
 				/*Making the element bigger than visable so more content is loaded and the scroll bar doesnt bottom out as easily*/
-				<div id="viewer" className=" overflow-hidden border-2 border-orange-700 my-10 rounded-lg w-10/12 h-[1800px]" style={{ maxHeight: `${maxHeight}px`, maxWidth: `${maxWidth}px` }} />
+				<div id="viewer" className=" overflow-hidden border-2 border-orange-700 my-10 rounded-lg w-10/12 h-[1800px]" style={{ maxHeight: `${maxHeight}px`, maxWidth: `${maxWidth}px` }} >
+
+					{scrollStyle ? null :
+						<div id="controls" className="flex justify-between">
+							<button
+								onClick={() => bookRender.prev()}
+								type="button"
+								className="px-2 py-1 text-xs font-semibold text-gray-900 bg-white rounded shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+							>
+								Previous
+							</button>
+							<button
+								onClick={() => bookRender.next()}
+								type="button"
+								className="px-2 py-1 text-xs font-semibold text-gray-900 bg-white rounded shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+							>
+								Next
+							</button>
+						</div>
+					}
+
+				</div>
 			)}
 
 		</div>

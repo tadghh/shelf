@@ -1,8 +1,9 @@
 /* eslint-disable camelcase */
 import SettingsItem from "@/components/settings/settings-item";
 import { SettingsEnum } from "@/lib/SettingsItemEnum";
-export default function Settings() {
 
+export default function Settings() {
+	//The settings themselves should also be enums
 	return (
 		<div className="flex-col min-h-screen px-5 py-2 ml-20 bg-white">
 			<SettingsItem
