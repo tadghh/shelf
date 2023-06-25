@@ -1,5 +1,5 @@
 import { Cog8ToothIcon, HomeIcon, StarIcon } from "@heroicons/react/24/outline";
-
+import Link from "next/link";
 const navigation = [
 	{ name: "Books", href: "/books", icon: HomeIcon },
 	{ name: "Settings", href: "/settings", icon: Cog8ToothIcon },
@@ -20,12 +20,12 @@ export default function MainNavigation({ children = null }) {
 											className="w-6 text-white shrink-0"
 											aria-hidden="true"
 										/>
-										<a
+										<Link
 											href={item.href}
 											className="flex p-2 text-sm font-semibold leading-6 rounded-md text-inherit hover:bg-gray-800 group gap-x-3"
 										>
 											{item.name}
-										</a>
+										</Link>
 									</li>
 								))}
 							</ul>
