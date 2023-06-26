@@ -19,8 +19,6 @@ export default function Settings() {
 				settingsConfigString="endless_scroll"
 				settingsType={SettingsEnum.TOGGLE}
 			/>
-
-
 		</div>
 	);
 }

@@ -20,18 +20,17 @@ export default function Book() {
 	useEffect(() => {
 		async function loadBook() {
 			if (book !== undefined && !bookOpen) {
-				const test = await invoke("load_book", { title: book });
-				setBookData(test);
+				const bookData = await invoke("load_book", { title: book });
+				setBookData(bookData);
 
 				const bookLoaded = ePub({
 					encoding: "base64",
 				});
-				console.log(bookData.length);
-				console.log("size");
+
 				if (bookData.length !== 0 && !bookLoaded.isOpen) {
 					let endlessScrollValue;
 					bookRef.current = bookLoaded;
-					bookLoaded.open(test);
+					bookLoaded.open(bookData);
 
 					invoke("get_configuration_option", {
 						option_name: "endless_scroll",
