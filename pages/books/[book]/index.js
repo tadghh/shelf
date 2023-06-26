@@ -16,11 +16,13 @@ export default function Book() {
 	const [scrollStyle, setScrollStyle] = useState("false");
 	const [maxHeight, setMaxHeight] = useState();
 	const [maxWidth, setMaxWidth] = useState();
+	const [backgroundData, setBackgroundData] = useState();
 
 	useEffect(() => {
 		async function loadBook() {
 			if (book !== undefined && !bookOpen) {
 				const bookData = await invoke("load_book", { title: book });
+
 				setBookData(bookData);
 
 				const bookLoaded = ePub({
@@ -31,7 +33,9 @@ export default function Book() {
 					let endlessScrollValue;
 					bookRef.current = bookLoaded;
 					bookLoaded.open(bookData);
-
+					invoke("get_cover", { book_title: book }).then((data) => {
+						setBackgroundData(data);
+					});
 					invoke("get_configuration_option", {
 						option_name: "endless_scroll",
 					}).then(data => {
@@ -101,14 +105,14 @@ export default function Book() {
 	}, [book, router.events]);
 
 	return (
-		<div className="flex flex-col items-center max-h-screen ml-20 overflow-hidden justify-items-center ">
+		<div className="flex flex-col items-center max-h-screen ml-20 overflow-hidden justify-items-center bg-slate-600 ">
 			{bookError ? (
 				<div>
 					<h3>Book failed to load</h3>
 				</div>
 			) : (
 				/*Making the element bigger than visable so more content is loaded and the scroll bar doesnt bottom out as easily*/
-				<div id="viewer" className=" overflow-hidden border-2 border-orange-700 my-10 rounded-lg w-10/12 h-[1800px]" style={{ maxHeight: `${maxHeight}px`, maxWidth: `${maxWidth}px` }} >
+				<div id="viewer" className=" overflow-hidden border-2 border-orange-700 my-10 rounded-lg w-10/12 h-[1800px]" style={{ maxHeight: `${maxHeight}px`, maxWidth: `${maxWidth}px`, backgroundImage: `url('data:image/jpeg;base64,${backgroundData}')` }} >
 
 					{scrollStyle ? null :
 						<div id="controls" className="flex justify-between">

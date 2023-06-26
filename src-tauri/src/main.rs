@@ -193,7 +193,6 @@ fn create_covers() -> Option<Vec<Book>> {
 }
 #[tauri::command]
 fn load_book(title: String) -> Result<String, String> {
-    println!("{}", title);
     unsafe {
         let open_file: &String = &BOOK_JSON.json_path.to_owned();
         println!("{:?}", Path::new(&open_file).exists());
@@ -301,6 +300,40 @@ fn create_cover(book_directory: String, write_directory: &String) -> String {
     }
 
     return cover_path;
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn get_cover(book_title: String) -> Result<String, String> {
+    unsafe {
+        let open_file: &String = &BOOK_JSON.json_path.to_owned();
+
+        if Path::new(&open_file).exists() {
+            let file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .open(&open_file);
+
+            BOOK_JSON.update_books(
+                match serde_json::from_reader(BufReader::new(file.unwrap())) {
+                    Ok(data) => data,
+                    Err(_) => Vec::new(),
+                },
+            );
+
+            let temp = &BOOK_JSON.books;
+            let book_index = chunk_binary_search_index_load(temp, &book_title);
+            println!("yo");
+            if let Some(book) = temp.get(book_index.unwrap()) {
+                return Ok(base64_encode_file(&book.cover_location.to_string()).unwrap());
+            } else {
+                println!("Invalid index");
+            }
+        } else {
+            return Err("JSON File missing".to_string());
+        }
+    }
+    return Err("Error occured".to_string());
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -441,7 +474,8 @@ fn main() {
             base64_encode_file,
             load_book,
             change_configuration_option,
-            get_configuration_option
+            get_configuration_option,
+            get_cover
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
