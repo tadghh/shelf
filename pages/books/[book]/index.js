@@ -10,20 +10,19 @@ export default function Book() {
 	const { book } = router.query;
 	const bookRef = useRef(null);
 	const [bookData, setBookData] = useState("");
-	const [bookError, setBookError] = useState(false);
 	const [bookOpen, setBookOpen] = useState(false);
 	const [bookRender, setBookRender] = useState();
 	const [scrollStyle, setScrollStyle] = useState("false");
 	const [maxHeight, setMaxHeight] = useState();
 	const [maxWidth, setMaxWidth] = useState();
-	const [backgroundData, setBackgroundData] = useState();
+	const [backgroundData, setBackgroundData] = useState(null);
+	const [bookLoaded, setBookLoaded] = useState(false);
 
 	useEffect(() => {
 		async function loadBook() {
 			if (book !== undefined && !bookOpen) {
-				const bookData = await invoke("load_book", { title: book });
 
-				setBookData(bookData);
+				setBookData(await invoke("load_book", { title: book }));
 
 				const bookLoaded = ePub({
 					encoding: "base64",
@@ -31,11 +30,11 @@ export default function Book() {
 
 				if (bookData.length !== 0 && !bookLoaded.isOpen) {
 					let endlessScrollValue;
-					bookRef.current = bookLoaded;
-					bookLoaded.open(bookData);
+
 					invoke("get_cover", { book_title: book }).then((data) => {
 						setBackgroundData(data);
 					});
+
 					invoke("get_configuration_option", {
 						option_name: "endless_scroll",
 					}).then(data => {
@@ -45,6 +44,10 @@ export default function Book() {
 							setScrollStyle(endlessScrollValue === "true");
 						}
 					});
+
+					bookRef.current = bookLoaded;
+
+					bookLoaded.open(bookData);
 
 					try {
 						bookLoaded.ready.then(() => {
@@ -64,9 +67,9 @@ export default function Book() {
 							rendition.display();
 						});
 					} catch {
-						setBookError(true);
+						//handle this
 					}
-
+					setBookLoaded(true);
 					setBookOpen(true);
 				}
 			}
@@ -103,39 +106,38 @@ export default function Book() {
 			window.removeEventListener("resize", handleResize);
 		};
 	}, [book, router.events]);
-
+	//You can break it by squishing the window to small than it cant scroll 
 	return (
-		<div className="flex flex-col items-center max-h-screen ml-20 overflow-hidden justify-items-center bg-slate-600 ">
-			{bookError ? (
-				<div>
-					<h3>Book failed to load</h3>
-				</div>
-			) : (
-				/*Making the element bigger than visable so more content is loaded and the scroll bar doesnt bottom out as easily*/
-				<div id="viewer" className=" overflow-hidden border-2 border-orange-700 my-10 rounded-lg w-10/12 h-[1800px]" style={{ maxHeight: `${maxHeight}px`, maxWidth: `${maxWidth}px`, backgroundImage: `url('data:image/jpeg;base64,${backgroundData}')` }} >
+		<>
+			{bookLoaded &&
+				<div className="flex flex-col items-center max-h-screen justify-items-center " style={{ backgroundImage: `url('data:image/jpeg;base64,${backgroundData}')` }}>
+					<div className="flex flex-col items-center w-full h-full overflow-hidden backdrop-filter backdrop-blur justify-items-center " >
+						<div id="viewer" className="bg-white overflow-hidden ml-20 border-2 border-orange-700 my-10 rounded-lg w-[800px] h-[1800px]"  >
 
-					{scrollStyle ? null :
-						<div id="controls" className="flex justify-between">
-							<button
-								onClick={() => bookRender.prev()}
-								type="button"
-								className="px-2 py-1 text-xs font-semibold text-gray-900 bg-white rounded shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-							>
-								Previous
-							</button>
-							<button
-								onClick={() => bookRender.next()}
-								type="button"
-								className="px-2 py-1 text-xs font-semibold text-gray-900 bg-white rounded shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-							>
-								Next
-							</button>
+							{scrollStyle ? null :
+								<div id="controls" className="flex justify-between">
+									<button
+										onClick={() => bookRender.prev()}
+										type="button"
+										className="px-2 py-1 text-xs font-semibold text-gray-900 bg-white rounded shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+									>
+										Previous
+									</button>
+									<button
+										onClick={() => bookRender.next()}
+										type="button"
+										className="px-2 py-1 text-xs font-semibold text-gray-900 bg-white rounded shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+									>
+										Next
+									</button>
+								</div>
+							}
+
 						</div>
-					}
+					</div>
 
 				</div>
-			)}
-
-		</div>
+			}
+		</>
 	);
 }
