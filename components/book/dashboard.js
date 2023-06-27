@@ -11,11 +11,6 @@ export default function BookDashboard() {
 	const [imagesStatus, setImagesStatus] = useState();
 
 	useEffect(() => {
-
-		invoke("get_configuration_option", {
-			option_name: "book_folder_location",
-		}).then(data => setDirectoryStatus(data != null));
-
 		async function loadImages() {
 			const start = performance.now();
 
@@ -38,8 +33,17 @@ export default function BookDashboard() {
 			console.log(`Execution time: ${executionTime} milliseconds`);
 			setImagesStatus(true);
 		}
+		invoke("get_configuration_option", {
+			option_name: "book_folder_location",
+		}).then(data => {
 
-		loadImages();
+			if (data != "null" && data != null) {
+				setDirectoryStatus(data);
+				loadImages();
+
+			}
+			setImagesStatus(true);
+		});
 	}, []);
 
 	if (imagesStatus) {

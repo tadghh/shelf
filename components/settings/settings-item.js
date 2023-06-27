@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable camelcase */
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
@@ -12,8 +14,7 @@ export default function SettingsItem({
 	const Component = getComponentForEnum(settingsType);
 
 	const updateOption = ({ value }) => {
-		console.log("yo we changed" + settingsConfigString);
-		console.log("With" + value);
+
 		invoke("change_configuration_option", {
 			option_name: settingsConfigString,
 			value: value + "",

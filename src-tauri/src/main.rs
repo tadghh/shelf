@@ -97,7 +97,7 @@ fn create_covers() -> Option<Vec<Book>> {
         Some(val) => val,
         None => "".to_string(),
     };
-    if dir == "".to_string() {
+    if dir == "null".to_string() || dir == "".to_string() {
         return None;
     }
     let paths = fs::read_dir(&dir);
@@ -342,7 +342,7 @@ fn change_configuration_option(option_name: String, value: String) {
         .unwrap()
         .to_string_lossy()
         .replace("\\", "/");
-    let settings_path = format!("{}/{}", &home_dir, &SETTINGS_FILE_NAME);
+    let settings_path = format!("{}/{}", home_dir, &SETTINGS_FILE_NAME);
 
     let mut file = OpenOptions::new()
         .create(true)
@@ -384,14 +384,17 @@ fn change_configuration_option(option_name: String, value: String) {
 
 #[tauri::command(rename_all = "snake_case")]
 fn get_configuration_option(option_name: String) -> Option<String> {
+    //todo: when program first runs we should look for files like this and create them
     let home_dir = &env::current_dir()
         .unwrap()
         .to_string_lossy()
         .replace("\\", "/");
-    let settings_path = format!("{}/{}", &home_dir, &SETTINGS_FILE_NAME);
-
+    let settings_path = format!("{}/{}", home_dir, &SETTINGS_FILE_NAME);
+    println!("{:?}", &settings_path);
     let file = OpenOptions::new()
         .read(true)
+        .write(true)
+        .create(true)
         .open(&settings_path)
         .expect("The settings file should exist");
 
@@ -399,13 +402,13 @@ fn get_configuration_option(option_name: String) -> Option<String> {
 
     for line in reader.lines() {
         let line_content = line.unwrap();
-        // println!("{:?} bull", &line_content);
+
         if line_content.starts_with(&option_name) {
             let split: Vec<&str> = line_content.split("=").collect();
             return Some(split[1].to_string());
         }
     }
-
+    change_configuration_option(option_name, "null".to_string());
     return None;
 }
 #[tauri::command(rename_all = "snake_case")]

@@ -13,8 +13,7 @@ export default function Book() {
 	const [bookOpen, setBookOpen] = useState(false);
 	const [bookRender, setBookRender] = useState();
 	const [scrollStyle, setScrollStyle] = useState("false");
-	const [maxHeight, setMaxHeight] = useState();
-	const [maxWidth, setMaxWidth] = useState();
+
 	const [backgroundData, setBackgroundData] = useState(null);
 	const [bookLoaded, setBookLoaded] = useState(false);
 
@@ -96,15 +95,7 @@ export default function Book() {
 			}
 		});
 
-		function handleResize() {
-			setMaxHeight(window.innerHeight);
-			setMaxWidth(window.innerWidth);
-		}
 
-		window.addEventListener("resize", handleResize);
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
 	}, [book, router.events]);
 	//You can break it by squishing the window to small than it cant scroll 
 	return (
