@@ -3,7 +3,7 @@
 /* eslint-disable camelcase */
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { getComponentForEnum } from "@/lib/SettingsItemReturn";
+import { getComponentForEnum } from "@/lib/SettingsTypeReturn";
 export default function SettingsItem({
 	settingsTitle,
 	settingsConfigString,
