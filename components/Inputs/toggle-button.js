@@ -5,10 +5,12 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ');
 }
 
-export default function ToggleButton() {
-    const [enabled, setEnabled] = useState(false);
+export default function ToggleButton({ state }) {
+
+    const [enabled, setEnabled] = useState(state);
 
     return (
+
         <Switch
             checked={enabled}
             onChange={setEnabled}
@@ -52,6 +54,6 @@ export default function ToggleButton() {
                     </svg>
                 </span>
             </span>
-        </Switch>
-    );
+        </Switch>);
+
 }
