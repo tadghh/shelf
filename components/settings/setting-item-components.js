@@ -1,5 +1,6 @@
 import { open } from "@tauri-apps/api/dialog";
 import ToggleButton from "../Inputs/toggle-button";
+import { useEffect } from "react";
 const FileSettingComponent = ({ setter, status = "" }) => {
     return <span
         className="flex-none rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-blue-500 shadow-sm"
@@ -19,7 +20,12 @@ const FileSettingComponent = ({ setter, status = "" }) => {
 };
 const ToggleSettingComponent = ({ setter, status }) => {
     //This is bad and should be rewritten
-    status == "true" ? true : false;
+    if (status == "true") {
+        status = true;
+    } else if (status == "false") {
+        status = false;
+    }
+
     return <div onClick={() => setter(!status)}><ToggleButton state={status} /></div>;
 };
 

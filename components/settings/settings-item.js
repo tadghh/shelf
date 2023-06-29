@@ -27,6 +27,7 @@ export default function SettingsItem({
 			option_name: settingsConfigString,
 		}).then(data => {
 			if (data) {
+
 				setSettingsItemStatus(data);
 				setItemLoaded(true);
 			}

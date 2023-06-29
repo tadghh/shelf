@@ -6,7 +6,11 @@ function classNames(...classes) {
 }
 
 export default function ToggleButton({ state }) {
+    console.log(state == "true" ? true : false);
 
+    if (!state) {
+        console.log("t");
+    }
     const [enabled, setEnabled] = useState(state);
 
     return (
