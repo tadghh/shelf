@@ -4,9 +4,10 @@
 )]
 use base64::{engine::general_purpose, Engine as _};
 use epub::doc::EpubDoc;
-use rayon::prelude::*;
+use rayon::{prelude::*, vec};
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::path::Path;
@@ -45,38 +46,62 @@ static CACHE_FILE_NAME: &'static str = "book_cache.json";
 static SETTINGS_FILE_NAME: &'static str = "shelf_settings.conf";
 static COVER_IMAGE_FOLDER_NAME: &'static str = "cover_cache";
 
-//This creates the vector to be written to the json file
-fn create_book_vec(items: &Vec<String>, write_directory: &String) -> Vec<Book> {
-    let books: Vec<Book> = items
-        .par_iter()
-        .filter_map(|item| {
-            let title = EpubDoc::new(&item).unwrap().mdata("title").unwrap();
-
-            let new_book = Book {
-                cover_location: create_cover(item.to_string(), write_directory),
-                book_location: item.replace("\\", "/"),
-                title,
-            };
-
-            Some(new_book)
-        })
-        .collect();
-
-    let mut sorted_books = books;
-    sorted_books.sort_by(|a, b| a.title.cmp(&b.title));
-
-    sorted_books
+#[derive(Serialize, Deserialize, Debug)]
+enum Settings {
+    ENDLESS_SCROLL,
+    BOOK_LOCATION,
 }
-
-//Checks if a directory exists and if not its path is created
-fn create_directory(path: &String, new_folder_name: &String) -> String {
-    let created_dir = Path::new(&path).join(new_folder_name);
-    if !Path::new(&created_dir).exists() {
-        if let Err(err) = std::fs::create_dir_all(&created_dir) {
-            eprintln!("Failed to create folder: {}", err);
-        }
+#[derive(Serialize, Deserialize, Debug)]
+enum temp {
+    Settings,
+    String,
+}
+#[tauri::command]
+fn shelf_settings_health() -> HashMap<String, String> {
+    // this is making me sad
+    //I have a list of keys I will know exist
+    // I know what type these keys should be
+    enum ItemValue {
+        StringValue(String),
+        BoolValue(bool),
+        FloatValue(f64),
     }
-    return created_dir.to_string_lossy().replace("\\", "/");
+    struct SettingsItem {
+        item_key: String,
+        default_value: ItemValue,
+    }
+    let expected_keys = vec![
+        SettingsItem {
+            item_key: "book_folder_location".to_string(),
+            default_value: ItemValue::StringValue("E:\\Books\\Book\\Epub".to_string()),
+        },
+        SettingsItem {
+            item_key: "endless_scroll".to_string(),
+            default_value: ItemValue::BoolValue(false),
+        },
+    ];
+    //check if settings file exists
+    // Oh theres a file? lets verify the values
+    // map over the file comparing agaisnt expected keys
+    // if the value is good leave it otherwise use the default
+    //if not create it
+    let mut map = HashMap::new();
+    map.insert(
+        String::from("ENDLESS_SCROLL"),
+        String::from("endless_scroll"),
+    );
+    map.insert(
+        String::from("BOOK_LOCATION"),
+        String::from("book_folder_location"),
+    );
+    return map;
+    // loop through list of settings and itialize default key and vals
+}
+#[tauri::command]
+fn shelf_setup() {
+    //file name to long
+    shelf_settings_health();
+    //if it does load it?
 }
 
 #[tauri::command]
@@ -478,8 +503,43 @@ fn main() {
             load_book,
             change_configuration_option,
             get_configuration_option,
-            get_cover
+            get_cover,
+            shelf_settings_health
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+//This creates the vector to be written to the json file
+fn create_book_vec(items: &Vec<String>, write_directory: &String) -> Vec<Book> {
+    let books: Vec<Book> = items
+        .par_iter()
+        .filter_map(|item| {
+            let title = EpubDoc::new(&item).unwrap().mdata("title").unwrap();
+
+            let new_book = Book {
+                cover_location: create_cover(item.to_string(), write_directory),
+                book_location: item.replace("\\", "/"),
+                title,
+            };
+
+            Some(new_book)
+        })
+        .collect();
+
+    let mut sorted_books = books;
+    sorted_books.sort_by(|a, b| a.title.cmp(&b.title));
+
+    sorted_books
+}
+
+//Checks if a directory exists and if not its path is created
+fn create_directory(path: &String, new_folder_name: &String) -> String {
+    let created_dir = Path::new(&path).join(new_folder_name);
+    if !Path::new(&created_dir).exists() {
+        if let Err(err) = std::fs::create_dir_all(&created_dir) {
+            eprintln!("Failed to create folder: {}", err);
+        }
+    }
+    return created_dir.to_string_lossy().replace("\\", "/");
 }
