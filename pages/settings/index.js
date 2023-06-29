@@ -5,25 +5,26 @@ import { SettingsItems } from "@/lib/SettingsItemEnum";
 import { useEffect, useState } from "react";
 
 export default function Settings() {
-	const [settingsItems, setSettingsItems] = useState();
+	const [settingsItemsEnum, setSettingsItemsEnum] = useState();
+
 	useEffect(() => {
-		async function poo() {
-			setSettingsItems(await SettingsItems());
+		async function loadEnum() {
+			setSettingsItemsEnum(await SettingsItems());
 		}
-		poo();
+		loadEnum();
 	}, []);
-	console.log(settingsItems);
-	return settingsItems ? <div className="flex-col min-h-screen px-5 py-2 ml-20 bg-white">
+
+	return settingsItemsEnum ? <div className="flex-col min-h-screen px-5 py-2 ml-20 bg-white">
 		<SettingsItem
 			settingsTitle="Book directory"
 			settingsDescription="The folder containing your books"
-			settingsConfigString={settingsItems.BOOK_LOCATION}
+			settingsConfigString={settingsItemsEnum.BOOK_LOCATION}
 			settingsType={SettingsTypes.FILE}
 		/>
 		<SettingsItem
 			settingsTitle="Endless scrolling"
 			settingsDescription="The next page will load as you scroll"
-			settingsConfigString={settingsItems.ENDLESS_SCROLL}
+			settingsConfigString={settingsItemsEnum.ENDLESS_SCROLL}
 			settingsType={SettingsTypes.TOGGLE}
 		/>
 	</div> : <></>;
